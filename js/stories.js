@@ -8,7 +8,6 @@ let storyList;
 async function getAndShowStoriesOnStart() {
   storyList = await StoryList.getStories();
   $storiesLoadingMsg.remove();
-
   putStoriesOnPage();
 }
 
@@ -25,6 +24,7 @@ function generateStoryMarkup(story) {
   const hostName = story.getHostName();
   return $(`
       <li id="${story.storyId}">
+        <i class="far fa-star"></i>
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
@@ -46,9 +46,30 @@ function putStoriesOnPage() {
   for (let story of storyList.stories) {
     const $story = generateStoryMarkup(story);
     $allStoriesList.append($story);
+    checkIfStoryIsFavorited(story);
+    addUserStoryElements(story);
   }
-
   $allStoriesList.show();
+}
+
+function addUserStoryElements(story) {
+  if (story.username === currentUser.username) {
+    $(`#${story.storyId}`).addClass('myStory');
+    $(`#${story.storyId}`).append('<button class="delete-story-button hidden">Delete</button>');
+  }
+}
+
+function checkIfStoryIsFavorited(story) {
+  let favorited = false;
+  for (let favoriteStory of currentUser.favorites) {
+    if (favoriteStory.storyId === story.storyId) {
+      favorited = true;
+    }
+  }
+  if (favorited) {
+    $(`#${story.storyId}`).addClass('favorited');
+    $(`#${story.storyId} > i`).removeClass('far').addClass('fas');
+  }
 }
 
 async function newStorySubmitted(evt) {
@@ -65,3 +86,71 @@ async function newStorySubmitted(evt) {
 }
 
 $("#new-story-form").submit(newStorySubmitted);
+
+async function addFavoriteClick(evt) {
+  console.log(evt.target.parentElement);
+  const storyId = evt.target.parentElement.id;
+  $(`#${storyId} > i`).removeClass('far').addClass('fas');
+  currentUser.favorites.push(findStoryFromId(storyId));
+  await currentUser.addtoFavorites(storyId);
+}
+
+$body.on('click', '.far', addFavoriteClick);
+
+async function removeFavoriteClick(evt) {
+  const storyId = evt.target.parentElement.id;
+  $(`#${storyId} > i`).removeClass('fas').addClass('far');
+  const index = findIndexOfStoryInFavorites(storyId);
+  if (index !== -1) {
+    currentUser.favorites.splice(index, 1);
+  }
+  await currentUser.removeFromFavorites(storyId);
+}
+
+$body.on('click', '.fas', removeFavoriteClick);
+
+/** From the story ID find the story instance to add to or remove from favorited list */
+
+function findStoryFromId(storyId) {
+  for (let story of storyList.stories) {
+    if (story.storyId === storyId) {
+      console.log('story = ', story);
+      return story;
+    }
+  }
+}
+
+function findIndexOfStoryInFavorites(storyId) {
+  for (let i = 0; i < currentUser.favorites.length; i++) {
+    if (currentUser.favorites[i].storyId === storyId) {
+      return i;
+    } 
+  }
+}
+
+function deleteStoryClick(evt) {
+  deleteStoryFromDom(evt.target.parentElement);
+  deleteStoryFromStoryList(evt.target.parentElement.id);
+  deleteStoryFromApi (evt.target.parentElement.id);
+}
+
+$body.on('click', '.delete-story-button', deleteStoryClick);
+
+function deleteStoryFromDom (domElement) {
+  domElement.remove();
+}
+
+function deleteStoryFromStoryList(storyId) {
+  for (let i = 0; i < storyList.stories.length; i++) {
+    if (storyList.stories[i].storyId === storyId) {
+      storyList.stories.splice(i, 1);
+      break;
+    }
+  }
+}
+
+async function deleteStoryFromApi (storyId) {
+  const data = {data: {token: currentUser.loginToken}};
+  const res = await axios.delete(`https://hack-or-snooze-v3.herokuapp.com/stories/${storyId}`, data);
+  console.log(res);
+}

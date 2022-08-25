@@ -41,3 +41,20 @@ function navSubmitClick() {
 }
 
 $navSubmitStory.click(navSubmitClick);
+
+function navFavoritesClick() {
+  hidePageComponents();
+  putStoriesOnPage();
+  $('#all-stories-list > :not(.favorited)').addClass('hidden');
+}
+
+$navFavorites.click(navFavoritesClick);
+
+function navMyStoriesClick() {
+  hidePageComponents();
+  putStoriesOnPage();
+  $('#all-stories-list > :not(.myStory)').addClass('hidden');
+  $('.myStory button').removeClass('hidden');
+}
+
+$navMyStories.click(navMyStoriesClick);
