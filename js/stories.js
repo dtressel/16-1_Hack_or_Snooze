@@ -81,14 +81,12 @@ async function newStorySubmitted(evt) {
   const $newStoryMarkup = generateStoryMarkup(newStory);
   $allStoriesList.prepend($newStoryMarkup);
   $("#new-story-form").trigger("reset");
-  hidePageComponents();
-  $allStoriesList.show();
+  navAllStories();
 }
 
 $("#new-story-form").submit(newStorySubmitted);
 
 async function addFavoriteClick(evt) {
-  console.log(evt.target.parentElement);
   const storyId = evt.target.parentElement.id;
   $(`#${storyId} > i`).removeClass('far').addClass('fas');
   currentUser.favorites.push(findStoryFromId(storyId));
@@ -114,7 +112,6 @@ $body.on('click', '.fas', removeFavoriteClick);
 function findStoryFromId(storyId) {
   for (let story of storyList.stories) {
     if (story.storyId === storyId) {
-      console.log('story = ', story);
       return story;
     }
   }
@@ -128,10 +125,10 @@ function findIndexOfStoryInFavorites(storyId) {
   }
 }
 
-function deleteStoryClick(evt) {
+async function deleteStoryClick(evt) {
   deleteStoryFromDom(evt.target.parentElement);
   deleteStoryFromStoryList(evt.target.parentElement.id);
-  deleteStoryFromApi (evt.target.parentElement.id);
+  await deleteStoryFromApi(evt.target.parentElement.id);
 }
 
 $body.on('click', '.delete-story-button', deleteStoryClick);
