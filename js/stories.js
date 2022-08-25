@@ -24,7 +24,7 @@ function generateStoryMarkup(story) {
   const hostName = story.getHostName();
   return $(`
       <li id="${story.storyId}">
-        <i class="far fa-star"></i>
+        <i class="far fa-star hidden"></i>
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
@@ -39,15 +39,19 @@ function generateStoryMarkup(story) {
 
 function putStoriesOnPage() {
   console.debug("putStoriesOnPage");
-
   $allStoriesList.empty();
 
   // loop through all of our stories and generate HTML for them
   for (let story of storyList.stories) {
     const $story = generateStoryMarkup(story);
     $allStoriesList.append($story);
-    checkIfStoryIsFavorited(story);
-    addUserStoryElements(story);
+    if (currentUser) {
+      checkIfStoryIsFavorited(story);
+      addUserStoryElements(story);
+    }
+    if (currentUser) {
+      unhideStars();
+    }
   }
   $allStoriesList.show();
 }
@@ -70,6 +74,10 @@ function checkIfStoryIsFavorited(story) {
     $(`#${story.storyId}`).addClass('favorited');
     $(`#${story.storyId} > i`).removeClass('far').addClass('fas');
   }
+}
+
+function unhideStars() {
+  $('.fa-star').show();
 }
 
 async function newStorySubmitted(evt) {
