@@ -75,7 +75,7 @@ class StoryList {
 
   async addStory(user, newStory) {
     const story = {token: user.loginToken, story: {author: newStory.author, title: newStory.title, url: newStory.url}};
-    const res = await axios.post('https://hack-or-snooze-v3.herokuapp.com/stories', story);
+    const res = await axios.post(`${BASE_URL}/stories`, story);
     const createdStory = new Story(res.data.story);
     this.stories.unshift(createdStory);
     return createdStory;
@@ -199,13 +199,13 @@ class User {
 
   async addtoFavorites(storyId) {
     const data = {token: this.loginToken};
-    const result = await axios.post(`https://hack-or-snooze-v3.herokuapp.com/users/${this.username}/favorites/${storyId}`, data);
+    const result = await axios.post(`${BASE_URL}/users/${this.username}/favorites/${storyId}`, data);
     console.log(result);
   }
 
   async removeFromFavorites(storyId) {
     const data = {data: {token: this.loginToken}};
-    const result = await axios.delete(`https://hack-or-snooze-v3.herokuapp.com/users/${this.username}/favorites/${storyId}`, data);
+    const result = await axios.delete(`${BASE_URL}/users/${this.username}/favorites/${storyId}`, data);
     console.log(result);
   }
 }

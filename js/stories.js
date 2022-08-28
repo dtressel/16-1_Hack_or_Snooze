@@ -48,8 +48,6 @@ function putStoriesOnPage() {
     if (currentUser) {
       checkIfStoryIsFavorited(story);
       addUserStoryElements(story);
-    }
-    if (currentUser) {
       unhideStars();
     }
   }
@@ -156,6 +154,6 @@ function deleteStoryFromStoryList(storyId) {
 
 async function deleteStoryFromApi (storyId) {
   const data = {data: {token: currentUser.loginToken}};
-  const res = await axios.delete(`https://hack-or-snooze-v3.herokuapp.com/stories/${storyId}`, data);
+  const res = await axios.delete(`${BASE_URL}/stories/${storyId}`, data);
   console.log(res);
 }
