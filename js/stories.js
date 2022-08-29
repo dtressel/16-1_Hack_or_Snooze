@@ -54,13 +54,6 @@ function putStoriesOnPage() {
   $allStoriesList.show();
 }
 
-function addUserStoryElements(story) {
-  if (story.username === currentUser.username) {
-    $(`#${story.storyId}`).addClass('myStory');
-    $(`#${story.storyId}`).append('<button class="delete-story-button hidden">Delete</button>');
-  }
-}
-
 function checkIfStoryIsFavorited(story) {
   let favorited = false;
   for (let favoriteStory of currentUser.favorites) {
@@ -74,19 +67,31 @@ function checkIfStoryIsFavorited(story) {
   }
 }
 
+function addUserStoryElements(story) {
+  if (story.username === currentUser.username) {
+    $(`#${story.storyId}`).addClass('myStory');
+    $(`#${story.storyId}`).append('<button class="delete-story-button hidden">Delete</button>');
+  }
+}
+
 function unhideStars() {
   $('.fa-star').show();
 }
 
 async function newStorySubmitted(evt) {
   evt.preventDefault();
+  // get form values:
   const title = $("#new-story-title").val();
   const author = $("#new-story-author").val();
   const url = $("#new-story-url").val();
+  // send story info to API and add to running storyList
   const newStory = await storyList.addStory(currentUser, {title, author, url});
+  // add story to html
   const $newStoryMarkup = generateStoryMarkup(newStory);
   $allStoriesList.prepend($newStoryMarkup);
+  // clear form
   $("#new-story-form").trigger("reset");
+  // navigate back to landing page
   navAllStories();
 }
 
@@ -94,8 +99,11 @@ $("#new-story-form").submit(newStorySubmitted);
 
 async function addFavoriteClick(evt) {
   const storyId = evt.target.parentElement.id;
+  // update visual star to filled star
   $(`#${storyId} > i`).removeClass('far').addClass('fas');
+  // add to User's favorites list
   currentUser.favorites.push(findStoryFromId(storyId));
+  // send new favorite info to API
   await currentUser.addtoFavorites(storyId);
 }
 
@@ -103,11 +111,14 @@ $body.on('click', '.far', addFavoriteClick);
 
 async function removeFavoriteClick(evt) {
   const storyId = evt.target.parentElement.id;
+  // update visual star to empty star
   $(`#${storyId} > i`).removeClass('fas').addClass('far');
+  // remove from User's favorites list
   const index = findIndexOfStoryInFavorites(storyId);
   if (index !== -1) {
     currentUser.favorites.splice(index, 1);
   }
+  // remove favorite info from API
   await currentUser.removeFromFavorites(storyId);
 }
 
